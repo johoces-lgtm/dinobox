@@ -19,11 +19,10 @@ public class Encomienda {
     private String estado;
     
     @Column(length = 1000)
-    private String historial; // Guardaremos el historial separado por comas o saltos de línea
+    private String historial; 
 
     public Encomienda() {}
 
-    // Getters y Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     

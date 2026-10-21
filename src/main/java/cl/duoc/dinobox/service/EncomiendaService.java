@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.Random;
+import java.util.List;
 
 @Service
 public class EncomiendaService {
@@ -15,19 +17,25 @@ public class EncomiendaService {
     private EncomiendaRepository repository;
 
     public Encomienda registrar(String destinatario, String direccion) {
+
         Encomienda enc = new Encomienda();
-        enc.setCodigo("TEMP_CODE");
-        enc.setDestinatario(destinatario != null ? destinatario : "Usuario");
-        enc.setDireccion(direccion != null ? direccion : "Santiago Centro");
+
+        Random random = new Random();
+        String codigo = "DINO" + (10000 + random.nextInt(90000));
+
+        while (repository.findByCodigo(codigo).isPresent()) {
+            codigo = "DINO" + (10000 + random.nextInt(90000));
+        }
+
+        enc.setCodigo(codigo);
+        enc.setDestinatario(destinatario);
+        enc.setDireccion(direccion);
         enc.setEstado("En Recepción");
-        enc.setHistorial(LocalDate.now() + " - En Recepción (" + (direccion != null ? direccion : "Santiago Centro") + ")");
 
-        Encomienda guardada = repository.save(enc);
+        enc.setHistorial(
+                LocalDate.now() + " - En Recepción (" + direccion + ")");
 
-        String codigoGenerado = "DINO" + (99 + guardada.getId());
-        guardada.setCodigo(codigoGenerado);
-
-        return repository.save(guardada);
+        return repository.save(enc);
     }
 
     public Optional<Encomienda> buscarPorCodigo(String codigo) {
@@ -39,10 +47,26 @@ public class EncomiendaService {
         if (opt.isPresent()) {
             Encomienda enc = opt.get();
             enc.setEstado(nuevoEstado);
-            String nuevoHistorial = enc.getHistorial() + " | " + LocalDate.now() + " - " + nuevoEstado + " (" + ubicacion + ")";
+            String nuevoHistorial = enc.getHistorial() + " | " + LocalDate.now() + " - " + nuevoEstado + " ("
+                    + ubicacion + ")";
             enc.setHistorial(nuevoHistorial);
             return repository.save(enc);
         }
         return null;
+    }
+    public List<Encomienda> listarTodas() {
+        return repository.findAll();
+    }
+
+    public boolean eliminar(String codigo) {
+        Optional<Encomienda> encomienda =
+                repository.findByCodigo(codigo.toUpperCase());
+
+        if (encomienda.isPresent()) {
+            repository.delete(encomienda.get());
+            return true;
+        }
+
+        return false;
     }
 }
